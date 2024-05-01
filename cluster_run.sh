@@ -1,6 +1,9 @@
 #!/bin/bash
 trap "exit" INT
 
+green="\033[01;32m"
+red="\033[0;31m"
+blue="\033[01;34m"
 
 FILENAME=test.lst
 DONEFILE="done.txt"
@@ -33,14 +36,12 @@ do
       shift
 	if [[ "$NCORES" == "0" ]]
 	then
-	  echo "Use only 1 core"
+	  echo -e "${blue}Warning:$(tput sgr0) 0 cores not possible! Use only 1 core..."
 	  NCORES=1
 	else
-	  if (( $NCORES < $(nproc) ))
+	  if (( $NCORES >= $(nproc) ))
 	  then
-	    echo "Use $NCORES core(s)"
-	  else
-	    echo "Given number of cores $NCORES larger than available cores!"
+	    echo -e "${blue}Warning:$(tput sgr0) Given number of cores $NCORES larger than available cores!"
 	    NCORES=$[$(nproc)-1]
 	    echo "Use $NCORES cores instead..."
 	  fi
@@ -51,18 +52,18 @@ do
   -h) echo "--------------------------------------------------------------------"
       echo "Help for cluster_run.sh"
       echo "--------------------------------------------------------------------"
-      echo "-f FILENAME  : set file with commands to run in parallel ($FILENAME)"
-      echo "-d DONEFILE  : file saving run times when done ($DONEFILE)"
-      echo "-N NCOMMANDS : maximal number of commands to run from FILENAME ($(if [[ $NCOMMANDS == $MAXINT ]]; then echo all; else echo $NCOMMANDS; fi))"
-      echo "-S NSKIP     : number of commands to skip from FILENAME ($NSKIP)"
-      echo "-t           : start in test-mode, only echo, no run ($(if [[ $TEST == true ]]; then echo yes; else echo no; fi))"
-      echo "-c NCORES    : define number of parallely used cores <= nproc-1 ($NCORES)"
+      echo -e "-f FILENAME  : set file with commands to run in parallel $green($FILENAME)$(tput sgr0)"
+      echo -e "-d DONEFILE  : file saving run times when done $green($DONEFILE)$(tput sgr0)"
+      echo -e "-N NCOMMANDS : maximal number of commands to run from FILENAME $green($(if [[ $NCOMMANDS == $MAXINT ]]; then echo all; else echo $NCOMMANDS; fi))$(tput sgr0)"
+      echo -e "-S NSKIP     : number of commands to skip from FILENAME $green($NSKIP)$(tput sgr0)"
+      echo -e "-t           : start in test-mode, only echo, no run $green($(if [[ $TEST == true ]]; then echo yes; else echo no; fi))$(tput sgr0)"
+      echo -e "-c NCORES    : define number of parallely used cores <= nproc-1 $green($NCORES)$(tput sgr0)"
       echo "-y           : don't wait for user to check the input"
       echo "-h           : display this help"
       echo "--------------------------------------------------------------------"
       exit
       ;;
-  *)  echo "Option $1 not recognized! Ignored.." ;;
+  *)  echo -e "${blue}Warning:$(tput sgr0) Option $1 not recognized! Ignored.." ;;
   esac
 
   shift
@@ -84,7 +85,7 @@ if [[ -f "$FILENAME" ]]
 then
   echo "- filename is \"$FILENAME\""
 else
-  echo "ERROR: No file \"$FILENAME\" found! Abort..."
+  echo -e "${red}ERROR:$(tput sgr0) No file \"$FILENAME\" found! Abort..."
   exit
 fi
 
@@ -130,12 +131,12 @@ if [[ $JUMP == true ]]
 then
   echo "Jump over check. Start with commands..."
 elif 
-  echo "Please check if everything is okay. ('Enter' to continue): "
+  echo -e "Please check if everything is okay. ${blue}(Press 'Enter' to continue)$(tput sgr0)"
   read -t 10 -p ""
 then
   echo "Start with commands..."
 else
-  echo "Timeout!"
+  echo -e "${red}ERROR:$(tput sgr0) Timeout!"
   echo "exiting..."
   exit
 fi
